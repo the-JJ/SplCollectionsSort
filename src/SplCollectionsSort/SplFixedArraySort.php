@@ -47,22 +47,6 @@ class SplFixedArraySort
         $sfa[$j] = $tmp;
     }
 
-    private static function quickSortPartition(SplFixedArray $sfa, callable $comparison, $lo, $hi)
-    {
-        $pivot = $sfa[$lo + (($hi - $lo) >> 1)];
-        $left = $lo - 1;
-        $right = $hi + 1;
-
-        while(true) {
-            while($comparison($sfa[++$left], $pivot) < 0);
-            while($comparison($sfa[--$right], $pivot) > 0);
-            if ($left >= $right) break;
-            self::swap($sfa, $left, $right);
-        }
-
-        return $right;
-    }
-
     /**
      * Perform a non-recursive in-place quicksort.
      * Great for sorting big arrays. Implementation of quicksort that uses using SPL stack.
@@ -105,6 +89,22 @@ class SplFixedArraySort
                 $stack->push($pivotIndex);
             }
         }
+    }
+
+    private static function quickSortPartition(SplFixedArray $sfa, callable $comparison, $lo, $hi)
+    {
+        $pivot = $sfa[$lo + (($hi - $lo) >> 1)];
+        $left = $lo - 1;
+        $right = $hi + 1;
+
+        while(true) {
+            while($comparison($sfa[++$left], $pivot) < 0);
+            while($comparison($sfa[--$right], $pivot) > 0);
+            if ($left >= $right) break;
+            self::swap($sfa, $left, $right);
+        }
+
+        return $right;
     }
 
     /**
