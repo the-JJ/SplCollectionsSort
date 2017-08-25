@@ -6,3 +6,11 @@ php:
 
 before_script:
   - composer install
+  - composer require --dev satooshi/php-coveralls:1.0.1
+
+script:
+  - mkdir -p build/logs
+  - phpunit --coverage-clover build/logs/clover.xml
+
+after_script:
+  - php vendor/bin/coveralls -v
