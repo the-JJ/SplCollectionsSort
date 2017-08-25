@@ -1,0 +1,19 @@
+{
+  "name": "the-jj/spl-collections-sort",
+  "description": "Helper library for sorting Spl data structures",
+  "type": "library",
+  "license": "MIT",
+  "authors": [
+    {
+        "name": "Juraj Juričić",
+        "email": "gmail@juricicjuraj.com"
+    }
+  ],
+  "require": {},
+  "autoload": {
+    "psr-4": {"SplCollectionsSort\\": "src/SplCollectionsSort"}
+  },
+  "require-dev": {
+    "phpunit/phpunit": "^5.7"
+  }
+}
