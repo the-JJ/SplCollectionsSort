@@ -15,6 +15,9 @@ class SplFixedArraySortTest extends \PHPUnit\Framework\TestCase
         [1, 0],
         // already sorted array
         [1, 2, 3, 4, 5],
+        // edge test cases:
+        [1, 2, 1, 1, 1],
+        [2, 2, 1, 1, 2],
         // random test cases:
         [2, 4, 6, 3, 8, 1],
         [2, -4, -3, 6, -8, 1],

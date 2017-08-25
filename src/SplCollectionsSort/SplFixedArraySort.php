@@ -7,7 +7,8 @@ use SplFixedArray;
 use SplStack;
 
 /**
- * The SplFixedArray sort methods. Allow for sorting of SplFixedArray, which should have been introduced in SPL anyway.
+ * The SplFixedArray sort methods. Allow for sorting of SplFixedArray,
+ * which should have been introduced in SPL anyway.
  *
  * @package SplCollectionsSort
  */
@@ -108,7 +109,6 @@ class SplFixedArraySort
 
     /**
      * Perform a bottom-up, non-recursive in-place mergesort.
-     * Falls back to insertion sort for subarrays of less than THRESHOLD_INSERTIONSORT elements.
      *
      * @param SplFixedArray $sfa Array to sort
      * @param callable|null $comparison Callable comparison function. See
@@ -117,13 +117,7 @@ class SplFixedArraySort
     public static function mergeSort(SplFixedArray $sfa, callable $comparison = null)
     {
         $count = count($sfa);
-
         if ($count <= 1) {
-            return;
-        }
-
-        if ($count < static::THRESHOLD_INSERTIONSORT) {
-            static::insertionSort($sfa, $comparison);
             return;
         }
 
@@ -131,45 +125,46 @@ class SplFixedArraySort
             $comparison = [static::class, "comparison"];
         }
 
-        $result = new SplFixedArray($count);
-        for ($k = 1; $k < $count; $k = $k << 1) {
-            for ($left = 0; ($left + $k) < $count; $left += $k << 1) {
-                $right = $left + $k;
-                $rend = min($right + $k, $count);
-                $m = $left;
-                $i = $left;
-                $j = $right;
-                while ($i < $right && $j < $rend) {
-                    if ($comparison($sfa[$i], $sfa[$j]) <= 0) {
-                        $result[$m] = $sfa[$i];
-                        $i++;
-                    } else {
-                        $result[$m] = $sfa[$j];
-                        $j++;
-                    }
-                    $m++;
-                }
-                while ($i < $right) {
-                    $result[$m] = $sfa[$i];
-                    $i++;
-                    $m++;
-                }
-                while ($j < $rend) {
-                    $result[$m] = $sfa[$j];
-                    $j++;
-                    $m++;
-                }
-                for ($m = $left; $m < $rend; $m++) {
-                    $sfa[$m] = $result[$m];
-                }
+        $temp = new SplFixedArray($count);
+        for($len = 1; $len < $count; $len *= 2) {
+            for($lo = 0; $lo < $count - $len; $lo += $len +$len) {
+                $mid = $lo + $len - 1;
+                $hi = min($lo + $len + $len - 1, $count - 1);
+                self::mergeSortMerge($sfa, $temp, $lo, $mid, $hi, $comparison);
             }
+        }
+    }
+
+    private static function mergeSortMerge(SplFixedArray $sfa, SplFixedArray $temp, $lo, $mid, $hi, callable $comparison)
+    {
+        // copy to $temp
+        for ($k = $lo; $k <= $hi; $k++) {
+            $temp[$k] = $sfa[$k];
+        }
+
+        // merge back to $sfa
+        $left = $lo; $right = $mid + 1;
+        for($k = $lo; $k <= $hi; $k++) {
+            if ($left > $mid) {
+                $sfa[$k] = $temp[$right++];
+                continue;
+            }
+            if ($right > $hi) {
+                $sfa[$k] = $temp[$left++];
+                continue;
+            }
+            if ($comparison($temp[$right], $temp[$left]) > 0) {
+                $sfa[$k] = $temp[$left++];
+                continue;
+            }
+            $sfa[$k] = $temp[$right++];
         }
     }
 
     /**
      * Perform an insertion sort.
-     * Usually efficient for small arrays. Mergesort and quicksort implementations fall back to this implementation
-     * of insertion sort when subarrays' sizes reach THRESHOLD_INSERTIONSORT or less elements.
+     * Usually efficient for small arrays. Quicksort implementation falls back to insertion sort
+     * when subarrays' sizes reach THRESHOLD_INSERTIONSORT or less elements.
      *
      * @param SplFixedArray $sfa Array to sort
      * @param callable|null $comparison Callable comparison function. See
