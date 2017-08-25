@@ -15,7 +15,7 @@ use SplStack;
 class SplFixedArraySort
 {
     /**
-     * The number of elements for which insertion sort is used in of quicksort and merge sort.
+     * The number of elements for which insertion sort is used in of quicksort.
      */
     const THRESHOLD_INSERTIONSORT = 6;
 
@@ -34,9 +34,9 @@ class SplFixedArraySort
             usort($array, $comparison);
         }
 
-        $i = 0;
+        $index = 0;
         foreach ($array as $item) {
-            $sfa[$i++] = $item;
+            $sfa[$index++] = $item;
         }
     }
 
@@ -66,36 +66,36 @@ class SplFixedArraySort
         $stack->push(count($sfa) - 1);
 
         while(!$stack->isEmpty()) {
-            $hi = $stack->pop();
-            $lo = $stack->pop();
-            if ($hi <= $lo) {
+            $high = $stack->pop();
+            $low = $stack->pop();
+            if ($high <= $low) {
                 return;
             }
 
-            if ($hi - $lo < static::THRESHOLD_INSERTIONSORT) {
+            if ($high - $low < static::THRESHOLD_INSERTIONSORT) {
                 // insertion sort
-                static::insertionSort($sfa, $comparison, $lo, $hi);
+                static::insertionSort($sfa, $comparison, $low, $high);
                 continue;
             }
 
-            $pivotIndex = self::quickSortPartition($sfa, $comparison, $lo, $hi);
+            $pivotIndex = self::quickSortPartition($sfa, $comparison, $low, $high);
 
-            if ($pivotIndex+1 < $hi) {
+            if ($pivotIndex+1 < $high) {
                 $stack->push($pivotIndex + 1);
-                $stack->push($hi);
+                $stack->push($high);
             }
-            if ($pivotIndex > $lo) {
-                $stack->push($lo);
+            if ($pivotIndex > $low) {
+                $stack->push($low);
                 $stack->push($pivotIndex);
             }
         }
     }
 
-    private static function quickSortPartition(SplFixedArray $sfa, callable $comparison, $lo, $hi)
+    private static function quickSortPartition(SplFixedArray $sfa, callable $comparison, $low, $high)
     {
-        $pivot = $sfa[$lo + (($hi - $lo) >> 1)];
-        $left = $lo - 1;
-        $right = $hi + 1;
+        $pivot = $sfa[$low + (($high - $low) >> 1)];
+        $left = $low - 1;
+        $right = $high + 1;
 
         while(true) {
             while($comparison($sfa[++$left], $pivot) < 0);
@@ -126,30 +126,30 @@ class SplFixedArraySort
         }
 
         $temp = new SplFixedArray($count);
-        for($len = 1; $len < $count; $len *= 2) {
-            for($lo = 0; $lo < $count - $len; $lo += $len +$len) {
-                $mid = $lo + $len - 1;
-                $hi = min($lo + $len + $len - 1, $count - 1);
-                self::mergeSortMerge($sfa, $temp, $lo, $mid, $hi, $comparison);
+        for($len = 1; $len < $count; $len <<= 1) {
+            for($low = 0; $low < $count - $len; $low += $len << 1) {
+                $mid = $low + $len - 1;
+                $high = min(($len << 1) + $low - 1, $count - 1);
+                self::mergeSortMerge($sfa, $temp, $low, $mid, $high, $comparison);
             }
         }
     }
 
-    private static function mergeSortMerge(SplFixedArray $sfa, SplFixedArray $temp, $lo, $mid, $hi, callable $comparison)
+    private static function mergeSortMerge(SplFixedArray $sfa, SplFixedArray $temp, $low, $mid, $high, callable $comparison)
     {
         // copy to $temp
-        for ($k = $lo; $k <= $hi; $k++) {
+        for ($k = $low; $k <= $high; $k++) {
             $temp[$k] = $sfa[$k];
         }
 
         // merge back to $sfa
-        $left = $lo; $right = $mid + 1;
-        for($k = $lo; $k <= $hi; $k++) {
+        $left = $low; $right = $mid + 1;
+        for($k = $low; $k <= $high; $k++) {
             if ($left > $mid) {
                 $sfa[$k] = $temp[$right++];
                 continue;
             }
-            if ($right > $hi) {
+            if ($right > $high) {
                 $sfa[$k] = $temp[$left++];
                 continue;
             }
@@ -169,17 +169,17 @@ class SplFixedArraySort
      * @param SplFixedArray $sfa Array to sort
      * @param callable|null $comparison Callable comparison function. See
      *      https://secure.php.net/manual/en/function.usort.php and `value_compare_func` for more details.
-     * @param int $lo Lower boundary for subarray sorting
-     * @param int|null $hi Upper boundary for subarray sorting. If null, will be set to count($sfa)
+     * @param int $low Lower boundary for subarray sorting
+     * @param int|null $high Upper boundary for subarray sorting. If null, will be set to count($sfa)
      */
-    public static function insertionSort(SplFixedArray $sfa, callable $comparison = null, $lo = 0, $hi = null)
+    public static function insertionSort(SplFixedArray $sfa, callable $comparison = null, $low = 0, $high = null)
     {
         $count = count($sfa);
-        if (is_null($hi)) {
-            $hi = $count-1;
+        if (is_null($high)) {
+            $high = $count-1;
         }
 
-        if ($hi-$lo < 1) {
+        if ($high-$low < 1) {
             return;
         }
 
@@ -187,11 +187,11 @@ class SplFixedArraySort
             $comparison = [static::class, "comparison"];
         }
 
-        for($i = $lo; $i <= $hi; $i++) {
+        for($i = $low; $i <= $high; $i++) {
             $element = $sfa[$i];
             $j = $i;
 
-            while($j > $lo && $comparison($sfa[$j-1], $element) > 0) {
+            while($j > $low && $comparison($sfa[$j-1], $element) > 0) {
                 $sfa[$j] = $sfa[$j-1];
                 $j--;
             }
