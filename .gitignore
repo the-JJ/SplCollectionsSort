@@ -2,3 +2,5 @@
 humbuglog.*
 
 composer.lock
+
+humbug.phar*
